@@ -1,0 +1,6 @@
+fal-client
+torch
+opencv-python
+Pillow
+numpy
+requests
