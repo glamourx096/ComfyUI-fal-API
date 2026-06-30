@@ -3829,17 +3829,25 @@ class GrokImagineVideo15Node:
 
 
 class Seedance2ReferenceToVideoNode:
+    # Model ID mapping for the three Seedance 2.0 reference-to-video variants
+    MODEL_MAP = {
+        "mini":     "bytedance/seedance-2.0/mini/reference-to-video",
+        "fast":     "bytedance/seedance-2.0/fast/reference-to-video",
+        "standard": "bytedance/seedance-2.0/reference-to-video",
+    }
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
                 "prompt": ("STRING", {"default": "", "multiline": True}),
+                "model_variant": (["mini", "fast", "standard"], {"default": "mini"}),
             },
             "optional": {
                 "image_urls": ("IMAGE", {"default": None, "multiple": True}),
                 "video_urls": ("VIDEO", {"default": None, "multiple": True}),
                 "audio_urls": ("AUDIO", {"default": None, "multiple": True}),
-                "resolution": (["480p", "720p"], {"default": "720p"}),
+                "resolution": (["480p", "720p"], {"default": "480p"}),
                 "duration": ("INT", {"default": 5, "min": 1, "max": 15}),
                 "aspect_ratio": (
                     ["auto", "21:9", "16:9", "4:3", "1:1", "3:4", "9:16"],
@@ -3848,7 +3856,6 @@ class Seedance2ReferenceToVideoNode:
                 "generate_audio": ("BOOLEAN", {"default": True}),
                 "bitrate_mode": (["standard", "high"], {"default": "standard"}),
                 "seed": ("INT", {"default": -1, "min": -1, "max": 2147483647}),
-                "fast_model": ("BOOLEAN", {"default": True}),
             },
         }
 
@@ -3888,6 +3895,7 @@ class Seedance2ReferenceToVideoNode:
     def generate_video(
         self,
         prompt,
+        model_variant,
         image_urls=None,
         video_urls=None,
         audio_urls=None,
@@ -3897,12 +3905,8 @@ class Seedance2ReferenceToVideoNode:
         generate_audio=True,
         bitrate_mode="standard",
         seed=-1,
-        fast_model=True,
     ):
-        model="bytedance/seedance-2.0/reference-to-video"
-        if fast_model:
-          model="bytedance/seedance-2.0/fast/reference-to-video"
-          
+        endpoint = self.MODEL_MAP[model_variant]
         try:
             arguments = {
                 "prompt": prompt,
@@ -3910,8 +3914,11 @@ class Seedance2ReferenceToVideoNode:
                 "duration": duration,
                 "aspect_ratio": aspect_ratio,
                 "generate_audio": generate_audio,
-                "bitrate_mode": bitrate_mode,
             }
+
+            # bitrate_mode is not supported by the "mini" variant
+            if model_variant in ("fast", "standard"):
+                arguments["bitrate_mode"] = bitrate_mode
 
             # Upload reference images
             if image_urls is not None:
@@ -3955,24 +3962,32 @@ class Seedance2ReferenceToVideoNode:
                 arguments["seed"] = seed
 
             result = ApiHandler.submit_and_get_result(
-                model, arguments
+                endpoint, arguments
             )
             video_url = result["video"]["url"]
             return (video_url,)
         except Exception as e:
             return ApiHandler.handle_video_generation_error(
-                model, str(e)
+                endpoint, str(e)
             )
 
 
 class Seedance2ImageToVideoNode:
+    # Model ID mapping for the three Seedance 2.0 image-to-video variants
+    MODEL_MAP = {
+        "mini":     "bytedance/seedance-2.0/mini/image-to-video",
+        "fast":     "bytedance/seedance-2.0/fast/image-to-video",
+        "standard": "bytedance/seedance-2.0/image-to-video",
+    }
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
                 "prompt": ("STRING", {"default": "", "multiline": True}),
                 "image": ("IMAGE",),
-                "resolution": (["480p", "720p"], {"default": "720p"}),
+                "model_variant": (["mini", "fast", "standard"], {"default": "mini"}),
+                "resolution": (["480p", "720p"], {"default": "480p"}),
                 "duration": ("INT", {"default": 5, "min": 1, "max": 15}),
                 "aspect_ratio": (
                     ["auto", "21:9", "16:9", "4:3", "1:1", "3:4", "9:16"],
@@ -3984,7 +3999,6 @@ class Seedance2ImageToVideoNode:
                 "generate_audio": ("BOOLEAN", {"default": True}),
                 "bitrate_mode": (["standard", "high"], {"default": "standard"}),
                 "seed": ("INT", {"default": -1, "min": -1, "max": 2147483647}),
-                "fast_model": ("BOOLEAN", {"default": True}),
             },
         }
 
@@ -3996,6 +4010,7 @@ class Seedance2ImageToVideoNode:
         self,
         prompt,
         image,
+        model_variant,
         resolution,
         duration,
         aspect_ratio,
@@ -4003,17 +4018,13 @@ class Seedance2ImageToVideoNode:
         generate_audio=True,
         bitrate_mode="standard",
         seed=-1,
-        fast_model=True,
     ):
-        model="bytedance/seedance-2.0/image-to-video"
-        if fast_model:
-          model="bytedance/seedance-2.0/fast/image-to-video"
-        
+        endpoint = self.MODEL_MAP[model_variant]
         try:
             image_url = ImageUtils.upload_image(image)
             if not image_url:
                 return ApiHandler.handle_video_generation_error(
-                    model,
+                    endpoint,
                     "Failed to upload image",
                 )
 
@@ -4024,8 +4035,11 @@ class Seedance2ImageToVideoNode:
                 "duration": duration,
                 "aspect_ratio": aspect_ratio,
                 "generate_audio": generate_audio,
-                "bitrate_mode": bitrate_mode,
             }
+
+            # bitrate_mode is not supported by the "mini" variant
+            if model_variant in ("fast", "standard"):
+                arguments["bitrate_mode"] = bitrate_mode
 
             if end_image is not None:
                 end_image_url = ImageUtils.upload_image(end_image)
@@ -4033,7 +4047,7 @@ class Seedance2ImageToVideoNode:
                     arguments["end_image_url"] = end_image_url
                 else:
                     return ApiHandler.handle_video_generation_error(
-                        model,
+                        endpoint,
                         "Failed to upload end image",
                     )
 
@@ -4041,13 +4055,13 @@ class Seedance2ImageToVideoNode:
                 arguments["seed"] = seed
 
             result = ApiHandler.submit_and_get_result(
-                model, arguments
+                endpoint, arguments
             )
             video_url = result["video"]["url"]
             return (video_url,)
         except Exception as e:
             return ApiHandler.handle_video_generation_error(
-                model, str(e)
+                endpoint, str(e)
             )
 
 
