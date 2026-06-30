@@ -4051,6 +4051,75 @@ class Seedance2ImageToVideoNode:
             )
 
 
+class Seedance2TextToVideoNode:
+    # Model ID mapping for the three Seedance 2.0 text-to-video variants
+    MODEL_MAP = {
+        "mini":     "bytedance/seedance-2.0/mini/text-to-video",
+        "fast":     "bytedance/seedance-2.0/fast/text-to-video",
+        "standard": "bytedance/seedance-2.0/text-to-video",
+    }
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "prompt": ("STRING", {"default": "", "multiline": True}),
+                "model_variant": (["mini", "fast", "standard"], {"default": "mini"}),
+                "resolution": (["480p", "720p", "1080p", "4k"], {"default": "480p"}),
+                "duration": ("INT", {"default": 5, "min": 1, "max": 15}),
+                "aspect_ratio": (
+                    ["auto", "21:9", "16:9", "4:3", "1:1", "3:4", "9:16"],
+                    {"default": "auto"},
+                ),
+                "generate_audio": ("BOOLEAN", {"default": True}),
+                "bitrate_mode": (["standard", "high"], {"default": "standard"}),
+            },
+            "optional": {
+                "seed": ("INT", {"default": -1, "min": -1, "max": 2147483647}),
+            },
+        }
+
+    RETURN_TYPES = ("STRING",)
+    FUNCTION = "generate_video"
+    CATEGORY = "FAL/VideoGeneration"
+
+    def generate_video(
+        self,
+        prompt,
+        model_variant,
+        resolution,
+        duration,
+        aspect_ratio,
+        generate_audio,
+        bitrate_mode,
+        seed=-1,
+    ):
+        endpoint = self.MODEL_MAP[model_variant]
+        try:
+            arguments = {
+                "prompt": prompt,
+                "resolution": resolution,
+                "duration": str(duration),
+                "aspect_ratio": aspect_ratio,
+                "generate_audio": generate_audio,
+            }
+
+            # bitrate_mode is not supported by the "mini" variant
+            if model_variant in ("fast", "standard"):
+                arguments["bitrate_mode"] = bitrate_mode
+
+            # seed is not part of the documented input schema but is forwarded
+            # for consistency with other Seedance 2.0 nodes
+            if seed != -1:
+                arguments["seed"] = seed
+
+            result = ApiHandler.submit_and_get_result(endpoint, arguments)
+            video_url = result["video"]["url"]
+            return (video_url,)
+        except Exception as e:
+            return ApiHandler.handle_video_generation_error(endpoint, str(e))
+
+
 # Update Node class mappings
 NODE_CLASS_MAPPINGS = {
     "InfinityStarTextToVideo_fal": InfinityStarTextToVideoNode,
@@ -4105,6 +4174,7 @@ NODE_CLASS_MAPPINGS = {
     "GrokImagineVideo15_fal": GrokImagineVideo15Node,
     "Seedance2ReferenceToVideo_fal": Seedance2ReferenceToVideoNode,
     "Seedance2ImageToVideo_fal": Seedance2ImageToVideoNode,
+    "Seedance2TextToVideo_fal": Seedance2TextToVideoNode,
 }
 
 # Update Node display name mappings
@@ -4161,4 +4231,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "GrokImagineVideo15_fal": "Grok Imagine Video v1.5 Image-to-Video (fal)",
     "Seedance2ReferenceToVideo_fal": "Seedance 2.0 Reference-to-Video (fal)",
     "Seedance2ImageToVideo_fal": "Seedance 2.0 Image-to-Video (fal)",
+    "Seedance2TextToVideo_fal": "Seedance 2.0 Text-to-Video (fal)",
 }

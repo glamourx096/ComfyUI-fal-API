@@ -141,6 +141,7 @@ After installation and configuration, restart ComfyUI. The new nodes will be ava
 - **Sora 2 Pro Image-to-Video (fal)**: Generate Videos from an image input using OpenAI Sora 2 Pro
 - **Seedance 2.0 Image-to-Video (fal)**: Image-to-video generation using Seedance 2.0 with optional end image, audio generation, and fast model toggle
 - **Seedance 2.0 Reference-to-Video (fal)**: Reference-to-video generation using Seedance 2.0 (supports multiple image, video, and audio references with fast model toggle)
+- **Seedance 2.0 Text-to-Video (fal)**: Text-to-video generation using Seedance 2.0 with model variant selector (mini / fast / standard), configurable resolution (480p-4k), duration, aspect ratio, audio generation, bitrate mode, and optional seed
 - **Cosmos 3 Super Image-to-Video (fal)**: Image-to-video generation using NVIDIA Cosmos 3 Super with optional agentic generation mode
 - **Grok Imagine Video v1.5 Image-to-Video (fal)**: Image-to-video generation using Grok Imagine Video v1.5 (480p/720p, 1-15s duration)
 - **DY Wan Fun 22 Video Generation (fal)**: Video generation using DY Wan Fun 2.2 with VACE/control architectures, pose/depth/normal/canny conditioning, and up to 4 LoRAs
