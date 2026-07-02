@@ -3836,6 +3836,14 @@ class Seedance2ReferenceToVideoNode:
         "standard": "bytedance/seedance-2.0/reference-to-video",
     }
 
+    # Reference input limits per spec:
+    #   up to 9 images, up to 3 videos, up to 3 audios,
+    #   total files across all modalities must not exceed 12.
+    MAX_IMAGES = 9
+    MAX_VIDEOS = 3
+    MAX_AUDIOS = 3
+    MAX_TOTAL = 12
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -3844,9 +3852,21 @@ class Seedance2ReferenceToVideoNode:
                 "model_variant": (["mini", "fast", "standard"], {"default": "mini"}),
             },
             "optional": {
-                "image_urls": ("IMAGE", {"default": None, "multiple": True}),
-                "video_urls": ("VIDEO", {"default": None, "multiple": True}),
-                "audio_urls": ("AUDIO", {"default": None, "multiple": True}),
+                "image_1": ("IMAGE", {"default": None}),
+                "image_2": ("IMAGE", {"default": None}),
+                "image_3": ("IMAGE", {"default": None}),
+                "image_4": ("IMAGE", {"default": None}),
+                "image_5": ("IMAGE", {"default": None}),
+                "image_6": ("IMAGE", {"default": None}),
+                "image_7": ("IMAGE", {"default": None}),
+                "image_8": ("IMAGE", {"default": None}),
+                "image_9": ("IMAGE", {"default": None}),
+                "video_1": ("VIDEO", {"default": None}),
+                "video_2": ("VIDEO", {"default": None}),
+                "video_3": ("VIDEO", {"default": None}),
+                "audio_1": ("AUDIO", {"default": None}),
+                "audio_2": ("AUDIO", {"default": None}),
+                "audio_3": ("AUDIO", {"default": None}),
                 "resolution": (["480p", "720p"], {"default": "480p"}),
                 "duration": ("INT", {"default": 5, "min": 1, "max": 15}),
                 "aspect_ratio": (
@@ -3896,9 +3916,21 @@ class Seedance2ReferenceToVideoNode:
         self,
         prompt,
         model_variant,
-        image_urls=None,
-        video_urls=None,
-        audio_urls=None,
+        image_1=None,
+        image_2=None,
+        image_3=None,
+        image_4=None,
+        image_5=None,
+        image_6=None,
+        image_7=None,
+        image_8=None,
+        image_9=None,
+        video_1=None,
+        video_2=None,
+        video_3=None,
+        audio_1=None,
+        audio_2=None,
+        audio_3=None,
         resolution="720p",
         duration=5,
         aspect_ratio="auto",
@@ -3908,6 +3940,46 @@ class Seedance2ReferenceToVideoNode:
     ):
         endpoint = self.MODEL_MAP[model_variant]
         try:
+            # Collect non-empty reference inputs
+            images = [
+                v for v in (
+                    image_1, image_2, image_3, image_4, image_5,
+                    image_6, image_7, image_8, image_9,
+                ) if v is not None
+            ]
+            videos = [v for v in (video_1, video_2, video_3) if v is not None]
+            audios = [v for v in (audio_1, audio_2, audio_3) if v is not None]
+
+            # Validate per-modality limits
+            if len(images) > self.MAX_IMAGES:
+                return ApiHandler.handle_video_generation_error(
+                    endpoint,
+                    f"Maximum {self.MAX_IMAGES} images allowed, got {len(images)}",
+                )
+            if len(videos) > self.MAX_VIDEOS:
+                return ApiHandler.handle_video_generation_error(
+                    endpoint,
+                    f"Maximum {self.MAX_VIDEOS} videos allowed, got {len(videos)}",
+                )
+            if len(audios) > self.MAX_AUDIOS:
+                return ApiHandler.handle_video_generation_error(
+                    endpoint,
+                    f"Maximum {self.MAX_AUDIOS} audio files allowed, got {len(audios)}",
+                )
+            total = len(images) + len(videos) + len(audios)
+            if total > self.MAX_TOTAL:
+                return ApiHandler.handle_video_generation_error(
+                    endpoint,
+                    f"Total files across all modalities must not exceed {self.MAX_TOTAL}, got {total}",
+                )
+
+            # Spec constraint: if audio is provided, at least one image or video is required
+            if audios and not (images or videos):
+                return ApiHandler.handle_video_generation_error(
+                    endpoint,
+                    "If audio is provided, at least one reference image or video is required",
+                )
+
             arguments = {
                 "prompt": prompt,
                 "resolution": resolution,
@@ -3921,15 +3993,15 @@ class Seedance2ReferenceToVideoNode:
                 arguments["bitrate_mode"] = bitrate_mode
 
             # Upload reference images
-            if image_urls is not None:
-                img_urls = ImageUtils.prepare_images(image_urls)
+            if images:
+                img_urls = ImageUtils.prepare_images(images)
                 if img_urls:
                     arguments["image_urls"] = img_urls
 
             # Upload reference videos
-            if video_urls is not None:
+            if videos:
                 vid_urls = []
-                for v in video_urls:
+                for v in videos:
                     try:
                         vid_url = ImageUtils.upload_file(v.get_stream_source())
                         if vid_url:
@@ -3940,9 +4012,9 @@ class Seedance2ReferenceToVideoNode:
                     arguments["video_urls"] = vid_urls
 
             # Upload reference audio (save AUDIO tensor dict to WAV first)
-            if audio_urls is not None:
+            if audios:
                 aud_urls = []
-                for a in audio_urls:
+                for a in audios:
                     tmp_path = None
                     try:
                         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tf:
