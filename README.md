@@ -95,6 +95,8 @@ After installation and configuration, restart ComfyUI. The new nodes will be ava
 - **Luma Uni-1 Edit (fal)**: Image editing using Luma Uni-1 with style options (manga) and up to 5 reference images
 - **Joyai Image Edit (fal)**: Image editing using Joyai with adjustable inference steps and guidance scale
 - **Phota Edit (fal)**: Image editing using Phota (supports up to 10 images, 1K/4K resolution, and profile IDs)
+- **Seedream 4.5 Edit (fal)**: Use Seedream 4.5 to edit images (supports up to 10 input images with auto_2K/auto_4K presets)
+- **Seedream 5.0 Lite Edit (fal)**: Use Seedream 5.0 Lite to edit images (supports up to 10 input images with auto_2K/auto_3K/auto_4K presets; the `seed` input is exposed for workflow control and is not sent to the API)
 
 ### Video Generation
 
