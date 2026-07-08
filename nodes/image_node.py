@@ -1952,7 +1952,7 @@ class SeedreamV45Edit:
 
 
 
-class SeedreamV5LiteEdit:
+class SeedreamV5Edit:
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -2021,7 +2021,7 @@ class SeedreamV5LiteEdit:
         seed=-1,
         sync_mode=False,
     ):
-        model_name = "Seedream 5.0 Lite Edit"
+        model_name = "Seedream 5.0 Edit"
 
         image_urls = []
         for i, img in enumerate(
@@ -2047,7 +2047,7 @@ class SeedreamV5LiteEdit:
                     print(f"Error: Failed to upload image {i} for {model_name}")
                     return ResultProcessor.create_blank_image()
 
-        endpoint = "fal-ai/bytedance/seedream/v5/lite/edit"
+        endpoint = "fal-ai/bytedance/seedream/v5/pro/edit"
         arguments = {
             "prompt": prompt,
             "image_urls": image_urls,
@@ -3251,7 +3251,7 @@ NODE_CLASS_MAPPINGS = {
     "SeedEditV3_fal": SeedEditV3,
     "SeedreamV4Edit_fal": SeedreamV4Edit,
     "SeedreamV45Edit_fal": SeedreamV45Edit,
-    "SeedreamV5LiteEdit_fal": SeedreamV5LiteEdit,
+    "SeedreamV5Edit_fal": SeedreamV5Edit,
     "NanoBananaTextToImage_fal": NanoBananaTextToImage,
     "NanoBananaEdit_fal": NanoBananaEdit,
     "NanoBananaPro_fal": NanoBananaPro,
@@ -3293,7 +3293,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "SeedEditV3_fal": "SeedEdit 3.0 (fal)",
     "SeedreamV4Edit_fal": "Seedream 4.0 Edit (fal)",
     "SeedreamV45Edit_fal": "Seedream 4.5 Edit (fal)",
-    "SeedreamV5LiteEdit_fal": "Seedream 5.0 Lite Edit (fal)",
+    "SeedreamV5Edit_fal": "Seedream 5.0 Edit (fal)",
     "NanoBananaTextToImage_fal": "Nano Banana Text-to-Image (fal)",
     "NanoBananaEdit_fal": "Nano Banana Edit (fal)",
     "NanoBananaPro_fal": "Nano Banana Pro (fal)",
