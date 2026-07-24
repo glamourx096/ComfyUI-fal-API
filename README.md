@@ -140,6 +140,7 @@ After installation and configuration, restart ComfyUI. The new nodes will be ava
 - **Seedance Image-to-Video (fal)**: Convert images to videos using Seedance Lite model
 - **Seedance Text-to-Video (fal)**: Generate videos from text prompts using Seedance Lite model
 - **Seedance Pro Image-to-Video (fal)**: Convert images to videos using Seedance Pro model with advanced controls
+- **Seedance V1.5 Pro Image-to-Video (fal)**: Convert images to videos using Seedance V1.5 Pro with audio generation, start/end frame support, configurable aspect ratio/resolution/duration (4-12s), camera fixed, and safety checker
 - **Sora 2 Pro Image-to-Video (fal)**: Generate Videos from an image input using OpenAI Sora 2 Pro
 - **Seedance 2.0 Image-to-Video (fal)**: Image-to-video generation using Seedance 2.0 with optional end image, audio generation, and fast model toggle
 - **Seedance 2.0 Reference-to-Video (fal)**: Reference-to-video generation using Seedance 2.0 (supports multiple image, video, and audio references with fast model toggle)

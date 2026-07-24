@@ -1989,7 +1989,7 @@ class SeedreamV5Edit:
                 "image_10": ("IMAGE",),
                 "num_images": ("INT", {"default": 1, "min": 1, "max": 6}),
                 "max_images": ("INT", {"default": 1, "min": 1, "max": 6}),
-                "enable_safety_checker": ("BOOLEAN", {"default": True}),
+                "enable_safety_checker": ("BOOLEAN", {"default": False}),
                 "sync_mode": ("BOOLEAN", {"default": False}),
                 "seed": ("INT", {"default": -1, "min": -1, "max": 2**32 - 1}),
             },
@@ -2047,7 +2047,9 @@ class SeedreamV5Edit:
                     print(f"Error: Failed to upload image {i} for {model_name}")
                     return ResultProcessor.create_blank_image()
 
-        endpoint = "fal-ai/bytedance/seedream/v5/pro/edit"
+        # endpoint = "fal-ai/bytedance/seedream/v5/pro/edit"
+        endpoint = "bytedance/seedream/v5/pro/edit"
+        
         arguments = {
             "prompt": prompt,
             "image_urls": image_urls,
